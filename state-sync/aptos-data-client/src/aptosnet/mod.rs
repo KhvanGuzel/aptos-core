@@ -46,8 +46,8 @@ mod state;
 mod tests;
 
 // Useful constants for the Aptos Data Client
-const GLOBAL_DATA_LOG_FREQ_SECS: u64 = 3;
-const POLLER_ERROR_LOG_FREQ_SECS: u64 = 3;
+const GLOBAL_DATA_LOG_FREQ_SECS: u64 = 1;
+const POLLER_ERROR_LOG_FREQ_SECS: u64 = 1;
 
 /// An [`AptosDataClient`] that fulfills requests from remote peers' Storage Service
 /// over AptosNet.
@@ -140,7 +140,7 @@ impl AptosNetDataClient {
             .copied()
             .ok_or_else(|| {
                 Error::DataIsUnavailable(
-                    "No connected peers are advertising that they can serve this data!".to_owned(),
+                    format!("No connected peers are advertising that they can serve this data! Request: {:?}",request),
                 )
             })
     }
@@ -203,10 +203,10 @@ impl AptosNetDataClient {
         E: Into<Error>,
     {
         let peer = self.choose_peer_for_request(&request).map_err(|error| {
-            error!(
+            debug!(
                 (LogSchema::new(LogEntry::StorageServiceRequest)
                     .event(LogEvent::PeerSelectionError)
-                    .message("Unable to select next peer")
+                    .message("Unable to select peer")
                     .error(&error))
             );
             error
